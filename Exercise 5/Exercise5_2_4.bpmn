@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<bpmn:definitions xmlns:bpmn="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:bpmndi="http://www.omg.org/spec/BPMN/20100524/DI" xmlns:dc="http://www.omg.org/spec/DD/20100524/DC" xmlns:di="http://www.omg.org/spec/DD/20100524/DI" id="Definitions_Turnaround" targetNamespace="http://bpmn.io/schema/bpmn" exporter="Camunda Modeler" exporterVersion="4.6.0" xmlns:zeebe="http://camunda.org/schema/zeebe/1.0" modeler:executionPlatform="Camunda Cloud" modeler:executionPlatformVersion="8.4.0">
+  <bpmn:process id="Process_Turnaround" isExecutable="false">
+    <bpmn:startEvent id="StartEvent_1" name="Aircraft at Gate">
+      <bpmn:outgoing>Flow_1</bpmn:outgoing>
+    </bpmn:startEvent>
+    <bpmn:task id="Task_Deboard" name="Deboard Passengers">
+      <bpmn:incoming>Flow_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_2</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_1" sourceRef="StartEvent_1" targetRef="Task_Deboard" />
+    <bpmn:parallelGateway id="Gateway_Split" name="Start Ground Ops">
+      <bpmn:incoming>Flow_2</bpmn:incoming>
+      <bpmn:outgoing>Flow_To_Refuel</bpmn:outgoing>
+      <bpmn:outgoing>Flow_To_Baggage</bpmn:outgoing>
+      <bpmn:outgoing>Flow_To_Cabin</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_2" sourceRef="Task_Deboard" targetRef="Gateway_Split" />
+    
+    <bpmn:task id="Task_Refuel" name="Refuel Aircraft">
+      <bpmn:incoming>Flow_To_Refuel</bpmn:incoming>
+      <bpmn:outgoing>Flow_From_Refuel</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_To_Refuel" sourceRef="Gateway_Split" targetRef="Task_Refuel" />
+    
+    <bpmn:task id="Task_Unload" name="Unload Baggage">
+      <bpmn:incoming>Flow_To_Baggage</bpmn:incoming>
+      <bpmn:outgoing>Flow_Bag_1</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_To_Baggage" sourceRef="Gateway_Split" targetRef="Task_Unload" />
+    <bpmn:task id="Task_Load" name="Load Baggage">
+      <bpmn:incoming>Flow_Bag_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_From_Baggage</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_Bag_1" sourceRef="Task_Unload" targetRef="Task_Load" />
+    
+    <bpmn:task id="Task_Clean" name="Clean Cabin">
+      <bpmn:incoming>Flow_To_Cabin</bpmn:incoming>
+      <bpmn:outgoing>Flow_Cab_1</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_To_Cabin" sourceRef="Gateway_Split" targetRef="Task_Clean" />
+    <bpmn:task id="Task_Cater" name="Load Catering">
+      <bpmn:incoming>Flow_Cab_1</bpmn:incoming>
+      <bpmn:outgoing>Flow_From_Cabin</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_Cab_1" sourceRef="Task_Clean" targetRef="Task_Cater" />
+    
+    <bpmn:parallelGateway id="Gateway_Join" name="Ground Ops Done">
+      <bpmn:incoming>Flow_From_Refuel</bpmn:incoming>
+      <bpmn:incoming>Flow_From_Baggage</bpmn:incoming>
+      <bpmn:incoming>Flow_From_Cabin</bpmn:incoming>
+      <bpmn:outgoing>Flow_Merge</bpmn:outgoing>
+    </bpmn:parallelGateway>
+    <bpmn:sequenceFlow id="Flow_From_Refuel" sourceRef="Task_Refuel" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_From_Baggage" sourceRef="Task_Load" targetRef="Gateway_Join" />
+    <bpmn:sequenceFlow id="Flow_From_Cabin" sourceRef="Task_Cater" targetRef="Gateway_Join" />
+    
+    <bpmn:task id="Task_Board" name="Board Passengers">
+      <bpmn:incoming>Flow_Merge</bpmn:incoming>
+      <bpmn:outgoing>Flow_End</bpmn:outgoing>
+    </bpmn:task>
+    <bpmn:sequenceFlow id="Flow_Merge" sourceRef="Gateway_Join" targetRef="Task_Board" />
+    <bpmn:endEvent id="EndEvent_1" name="Ready for Departure">
+      <bpmn:incoming>Flow_End</bpmn:incoming>
+    </bpmn:endEvent>
+    <bpmn:sequenceFlow id="Flow_End" sourceRef="Task_Board" targetRef="EndEvent_1" />
+  </bpmn:process>
+  <bpmndi:BPMNDiagram id="BPMNDiagram_1">
+    <bpmndi:BPMNPlane id="BPMNPlane_1" bpmnElement="Process_Turnaround">
+      
+      <bpmndi:BPMNShape id="_BPMNShape_StartEvent_2" bpmnElement="StartEvent_1">
+        <dc:Bounds x="152" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Deboard_di" bpmnElement="Task_Deboard">
+        <dc:Bounds x="230" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Split_di" bpmnElement="Gateway_Split">
+        <dc:Bounds x="370" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Refuel_di" bpmnElement="Task_Refuel">
+        <dc:Bounds x="480" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Unload_di" bpmnElement="Task_Unload">
+        <dc:Bounds x="480" y="40" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Load_di" bpmnElement="Task_Load">
+        <dc:Bounds x="620" y="40" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Clean_di" bpmnElement="Task_Clean">
+        <dc:Bounds x="480" y="280" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Cater_di" bpmnElement="Task_Cater">
+        <dc:Bounds x="620" y="280" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Gateway_Join_di" bpmnElement="Gateway_Join">
+        <dc:Bounds x="780" y="175" width="50" height="50" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="Task_Board_di" bpmnElement="Task_Board">
+        <dc:Bounds x="870" y="160" width="100" height="80" />
+      </bpmndi:BPMNShape>
+      <bpmndi:BPMNShape id="EndEvent_1_di" bpmnElement="EndEvent_1">
+        <dc:Bounds x="1020" y="182" width="36" height="36" />
+      </bpmndi:BPMNShape>
+
+      <bpmndi:BPMNEdge id="Flow_1_di" bpmnElement="Flow_1">
+        <di:waypoint x="188" y="200" />
+        <di:waypoint x="230" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_2_di" bpmnElement="Flow_2">
+        <di:waypoint x="330" y="200" />
+        <di:waypoint x="370" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_To_Refuel_di" bpmnElement="Flow_To_Refuel">
+        <di:waypoint x="420" y="200" />
+        <di:waypoint x="480" y="200" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_To_Baggage_di" bpmnElement="Flow_To_Baggage">
+        <di:waypoint x="395" y="175" />
+        <di:waypoint x="395" y="80" />
+        <di:waypoint x="480" y="80" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Bag_1_di" bpmnElement="Flow_Bag_1">
+        <di:waypoint x="580" y="80" />
+        <di:waypoint x="620" y="80" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_To_Cabin_di" bpmnElement="Flow_To_Cabin">
+        <di:waypoint x="395" y="225" />
+        <di:waypoint x="395" y="320" />
+        <di:waypoint x="480" y="320" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_Cab_1_di" bpmnElement="Flow_Cab_1">
+        <di:waypoint x="580" y="320" />
+        <di:waypoint x="620" y="320" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_From_Refuel_di" bpmnElement="Flow_From_Refuel">
+        <di:waypoint x="580" y="200" />
+        <di:waypoint x="780" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_From_Baggage_di" bpmnElement="Flow_From_Baggage">
+        <di:waypoint x="720" y="80" />
+        <di:waypoint x="805" y="80" />
+        <di:waypoint x="805" y="175" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_From_Cabin_di" bpmnElement="Flow_From_Cabin">
+        <di:waypoint x="720" y="320" />
+        <di:waypoint x="805" y="320" />
+        <di:waypoint x="805" y="225" />
+      </bpmndi:BPMNEdge>
+      
+      <bpmndi:BPMNEdge id="Flow_Merge_di" bpmnElement="Flow_Merge">
+        <di:waypoint x="830" y="200" />
+        <di:waypoint x="870" y="200" />
+      </bpmndi:BPMNEdge>
+      <bpmndi:BPMNEdge id="Flow_End_di" bpmnElement="Flow_End">
+        <di:waypoint x="970" y="200" />
+        <di:waypoint x="1020" y="200" />
+      </bpmndi:BPMNEdge>
+
+    </bpmndi:BPMNPlane>
+  </bpmndi:BPMNDiagram>
+</bpmn:definitions>
